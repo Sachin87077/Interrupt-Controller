@@ -4,7 +4,187 @@
 
 **Author & Repository Maintainer:** Sachin Pal
 
-## Overview
+## Overview# ⚡ 8-Input Interrupt Controller
+
+<p align="center">
+  **A Verilog-Based Interrupt Controller with Polling and Custom Priority Arbitration**
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Language-Verilog-blue?style=for-the-badge&logo=verilog" />
+  <img src="https://img.shields.io/badge/Design-RTL-orange?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Architecture-FSM-purple?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/License-GPL--3.0-green?style=for-the-badge" />
+</p>
+
+---
+
+## 📌 Overview
+
+The **Interrupt Controller** is an 8-channel hardware controller implemented in Verilog HDL, designed to manage interrupt requests from multiple peripheral devices and coordinate their servicing by a processor.
+
+It provides two operating modes: **Polling Mode** and **Custom Priority Mode**. While polling mode checks interrupt sources sequentially, custom priority mode allows the processor to configure the servicing order during initialization.
+
+The controller uses a shared data bus, interrupt request signals, and a handshake-based communication protocol to manage interrupt identification, acknowledgement, and servicing confirmation.
+
+## ✨ Key Features
+
+| Feature | Description |
+|---|---|
+| 8 Interrupt Channels | Handles eight independent interrupt sources |
+| Polling Mode | Sequentially scans all interrupt sources |
+| Custom Priority | Supports processor-configured interrupt priorities |
+| Priority Arbitration | Selects active interrupt sources according to priority order |
+| Handshake Protocol | Coordinates communication between processor and controller |
+| Source Identification | Identifies the interrupt currently being serviced |
+| Condition Code Validation | Validates acknowledgement and servicing responses |
+
+---
+
+## 🏗️ Architecture
+
+The controller operates through an initialization phase followed by interrupt monitoring and servicing.
+
+### Operating Flow
+
+1. **Reset:** Initializes the controller and waits for a processor command.
+2. **Mode Selection:** Selects polling or custom priority mode using the control bits.
+3. **Interrupt Monitoring:** Checks the eight interrupt sources according to the selected mode.
+4. **Interrupt Request:** Asserts `intr_out` when an active interrupt is detected.
+5. **Acknowledgement:** Waits for the processor to acknowledge the interrupt.
+6. **Source Identification:** Sends the interrupt source ID and corresponding condition code.
+7. **Servicing Confirmation:** Validates the processor's response before proceeding to the next interrupt source.
+
+---
+
+## ⚙️ Operating Modes
+
+### 1. Polling Mode
+
+In polling mode, the controller continuously scans all eight interrupt sources in sequential order.
+
+**Execution Sequence:**
+
+- The processor selects polling mode by transmitting control bits `01`.
+- The controller enters the polling state and checks each interrupt source sequentially.
+- When an active interrupt is detected, `intr_out` is asserted.
+- The controller waits for processor acknowledgement through `intr_in`.
+- Upon acknowledgement, the controller transmits the interrupt source ID with condition code `01011`.
+- The processor confirms servicing using condition code `10100`, along with the corresponding interrupt ID.
+- The controller validates the response and resumes polling.
+
+### 2. Custom Priority Mode
+
+Custom Priority Mode allows the processor to define the order in which interrupt sources are serviced.
+
+**Priority Configuration:**
+
+- The processor selects custom priority mode using control bits `10`.
+- Each configuration cycle provides two interrupt source IDs.
+- Four configuration cycles are used to specify the priority order of all eight sources.
+- The controller monitors interrupt sources from highest to lowest priority.
+- The first active source encountered is selected for servicing.
+
+**Condition Codes:**
+
+| Communication | Condition Code |
+|---|---|
+| Controller → Processor | `10011` |
+| Processor → Controller | `01100` |
+
+The interrupt servicing and acknowledgement mechanism follows the same general sequence as polling mode.
+
+---
+
+## 🔌 Interface Signals
+
+| Signal | Direction | Description |
+|---|---|---|
+| `intr_out` | Output | Interrupt request notification to the processor |
+| `intr_in` | Input | Processor acknowledgement signal |
+| `data_bus` | Bidirectional | Transfers commands, interrupt IDs, and condition codes |
+| Interrupt Sources | Input | Eight independent interrupt request inputs |
+
+### Processor-Controller Communication
+
+The controller and processor use a handshake mechanism based on transitions on `intr_in`.
+
+A High → Low → High transition represents an acknowledgement event.
+
+The shared data bus carries:
+
+- Operating mode configuration.
+- Interrupt source identification.
+- Controller condition codes.
+- Processor servicing confirmation.
+
+---
+
+## 📊 Condition Code Reference
+
+| Operating Mode | Controller → Processor | Processor → Controller |
+|---|---|---|
+| Polling | `01011` | `10100` |
+| Custom Priority | `10011` | `01100` |
+
+---
+
+## 📁 Project Structure
+
+```text
+Interrupt-Controller/
+│
+├── src/
+│   └── Verilog source files
+│
+├── testbench/
+│   └── Testbench files
+│
+├── AUTHORS
+├── COPYING
+├── README
+└── TODO
+```
+
+---
+
+## 🛠️ Technologies Used
+
+- **HDL:** Verilog
+- **Design Methodology:** RTL Design
+- **Control Logic:** Finite State Machines (FSM)
+- **Digital Design Concepts:** Interrupt Arbitration, Priority Logic, Handshake Protocols
+- **Verification:** Verilog Testbenches
+
+---
+
+## 🚀 Future Enhancements
+
+- Interrupt masking and individual interrupt enable/disable controls.
+- Handling simultaneous interrupt requests.
+- Nested interrupt support.
+- Enhanced priority arbitration mechanisms.
+- SystemVerilog-based verification and assertions.
+- FPGA synthesis and hardware implementation.
+
+---
+
+## 👨‍💻 Author
+
+**Sachin Pal**
+
+B.Tech | Electronics and Instrumentation Engineering  
+National Institute of Technology, Rourkela
+
+- GitHub: [@Sachin87077](https://github.com/Sachin87077)
+
+---
+
+## 📜 License
+
+This project is distributed under the **GNU General Public License v3.0 (GPL-3.0)**.
+
+See the [COPYING](COPYING) file for license details.
 
 An 8-input interrupt controller implemented in Verilog, designed to manage multiple interrupt sources and facilitate communication between a processor and peripheral devices.
 
