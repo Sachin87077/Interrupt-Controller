@@ -1,101 +1,154 @@
-# ⚡ 8-Input Interrupt Controller
 
-  <strong>A Verilog-Based Interrupt Controller with Polling and Custom Priority Arbitration</strong>
+# ⚡ 8-Input Interrupt Controller\
+
+ A Verilog-Based Interrupt Controller with Polling and Custom Priority Arbitration
 
 
 ## 📌 Overview
 
-The **Interrupt Controller** is an 8-channel hardware controller implemented in Verilog HDL, designed to manage interrupt requests from multiple peripheral devices and coordinate their servicing by a processor.
+The **8-Input Interrupt Controller** is a Verilog HDL-based digital system designed to manage interrupt requests from eight independent peripheral devices and coordinate their servicing by a processor.
 
-It supports two operating modes: **Polling Mode** and **Custom Priority Mode**. While polling mode checks interrupt sources sequentially, custom priority mode allows the processor to configure the servicing order during initialization.
+The controller implements two operating modes:
 
-The controller uses a shared data bus, interrupt request signals, and a handshake-based communication protocol to manage interrupt identification, acknowledgement, and servicing confirmation.
+- 🔄 **Polling Mode:** Sequentially scans all eight interrupt sources to identify active requests.
+- 🎯 **Custom Priority Mode:** Allows the processor to configure a custom priority order for interrupt servicing.
+
+Using a **Finite State Machine (FSM)**, shared data bus, and handshake-based communication protocol, the controller manages interrupt detection, source identification, processor acknowledgement, and servicing confirmation.
 
 ## ✨ Key Features
 
 | Feature | Description |
-|---|---|
-| 8 Interrupt Channels | Handles eight independent interrupt sources |
-| Polling Mode | Sequentially scans all interrupt sources |
-| Custom Priority | Supports processor-configured interrupt priorities |
-| Priority Arbitration | Selects active interrupt sources according to priority order |
-| Handshake Protocol | Coordinates communication between processor and controller |
-| Source Identification | Identifies the interrupt currently being serviced |
-| Condition Code Validation | Validates acknowledgement and servicing responses |
+|:---|:---|
+| **8 Interrupt Channels** | Handles eight independent interrupt sources. |
+| **Polling Mechanism** | Sequentially monitors all interrupt sources. |
+| **Custom Priority** | Supports processor-configurable priority ordering. |
+| **Priority Arbitration** | Selects interrupts according to configured priority. |
+| **FSM-Based Control** | Manages the complete interrupt handling sequence. |
+| **Handshake Protocol** | Synchronizes processor-controller communication. |
+| **Source Identification** | Identifies the interrupt source being serviced. |
+| **Condition Code Validation** | Verifies acknowledgement and servicing responses. |
 
 ---
 
-## 🏗️ Architecture
+## 🏗️ System Architecture
 
-The controller operates through an initialization phase followed by interrupt monitoring and servicing.
+The controller follows an FSM-driven architecture that manages initialization, interrupt monitoring, arbitration, and servicing.
 
-### Operating Flow
+### 🔁 Interrupt Handling Workflow
 
-1. **Reset:** Initializes the controller and waits for a processor command.
-2. **Mode Selection:** Selects polling or custom priority mode using the control bits.
-3. **Interrupt Monitoring:** Checks the eight interrupt sources according to the selected mode.
-4. **Interrupt Request:** Asserts `intr_out` when an active interrupt is detected.
-5. **Acknowledgement:** Waits for the processor to acknowledge the interrupt.
-6. **Source Identification:** Sends the interrupt source ID and corresponding condition code.
-7. **Servicing Confirmation:** Validates the processor's response before proceeding to the next interrupt source.
+```text
+          ┌──────────────┐
+          │     RESET    │
+          └──────┬───────┘
+                 │
+                 ▼
+          ┌──────────────┐
+          │    MODE      │
+          │  SELECTION   │
+          └──────┬───────┘
+                 │
+          ┌──────┴───────┐
+          ▼              ▼
+    ┌───────────┐  ┌──────────────┐
+    │  POLLING  │  │    CUSTOM    │
+    │   MODE    │  │   PRIORITY   │
+    └─────┬─────┘  └──────┬───────┘
+          │               │
+          └───────┬───────┘
+                  ▼
+          ┌──────────────┐
+          │  INTERRUPT   │
+          │  DETECTION   │
+          └──────┬───────┘
+                 │
+                 ▼
+          ┌──────────────┐
+          │ ASSERT       │
+          │ intr_out     │
+          └──────┬───────┘
+                 │
+                 ▼
+          ┌──────────────┐
+          │ PROCESSOR    │
+          │ ACKNOWLEDGEMENT
+          └──────┬───────┘
+                 │
+                 ▼
+          ┌──────────────┐
+          │ SOURCE ID &  │
+          │ CONDITION CODE
+          └──────┬───────┘
+                 │
+                 ▼
+          ┌──────────────┐
+          │ SERVICING    │
+          │ CONFIRMATION │
+          └──────┬───────┘
+                 │
+                 ▼
+          ┌──────────────┐
+          │ RESUME       │
+          │ MONITORING   │
+          └──────────────┘
+```
 
----
+### ⚙️ Operating Modes
 
-## ⚙️ Operating Modes
-
-### 1. Polling Mode
+#### 1. 🔄 Polling Mode
 
 In polling mode, the controller continuously scans all eight interrupt sources in sequential order.
 
 **Execution Sequence:**
 
-- The processor selects polling mode by transmitting control bits `01`.
-- The controller enters the polling state and checks each interrupt source sequentially.
-- When an active interrupt is detected, `intr_out` is asserted.
-- The controller waits for processor acknowledgement through `intr_in`.
-- Upon acknowledgement, the controller transmits the interrupt source ID with condition code `01011`.
-- The processor confirms servicing using condition code `10100`, along with the corresponding interrupt ID.
-- The controller validates the response and resumes polling.
+1. The processor selects polling mode using control bits `01`.
+2. The controller enters the polling state and checks interrupt sources sequentially.
+3. When an active interrupt is detected, `intr_out` is asserted.
+4. The controller waits for processor acknowledgement through `intr_in`.
+5. Upon acknowledgement, the controller transmits the interrupt source ID with condition code `01011`.
+6. The processor confirms servicing using condition code `10100`, along with the corresponding interrupt ID.
+7. The controller validates the response and resumes polling.
 
-### 2. Custom Priority Mode
+#### 2. 🎯 Custom Priority Mode
 
-Custom Priority Mode allows the processor to define the order in which interrupt sources are serviced.
+Custom Priority Mode enables the processor to configure the order in which interrupt sources are serviced.
 
 **Priority Configuration:**
 
-- The processor selects custom priority mode using control bits `10`.
-- Each configuration cycle provides two interrupt source IDs.
-- Four configuration cycles are used to specify the priority order of all eight sources.
-- The controller monitors interrupt sources from highest to lowest priority.
-- The first active source encountered is selected for servicing.
+1. The processor selects custom priority mode using control bits `10`.
+2. Each configuration cycle provides two interrupt source IDs.
+3. Four configuration cycles configure the priority order of all eight interrupt sources.
+4. The controller monitors interrupt sources from highest to lowest priority.
+5. The first active source encountered is selected for servicing.
 
-**Condition Codes:**
+**Communication Condition Codes:**
 
-| Communication | Condition Code |
-|---|---|
+| Direction | Condition Code |
+|:---|:---:|
 | Controller → Processor | `10011` |
 | Processor → Controller | `01100` |
 
-The interrupt servicing and acknowledgement mechanism follows the same general sequence as polling mode.
+The interrupt acknowledgement and servicing mechanism follows the same general sequence as polling mode.
 
 ---
 
-## 🔌 Interface Signals
+## 🔌 Hardware Interface
 
-| Signal | Direction | Description |
-|---|---|---|
-| `intr_out` | Output | Interrupt request notification to the processor |
-| `intr_in` | Input | Processor acknowledgement signal |
-| `data_bus` | Bidirectional | Transfers commands, interrupt IDs, and condition codes |
-| Interrupt Sources | Input | Eight independent interrupt request inputs |
+| Signal | Direction | Function |
+|:---|:---:|:---|
+| `intr_out` | Output | Notifies the processor about an active interrupt. |
+| `intr_in` | Input | Receives processor acknowledgement. |
+| `data_bus` | Bidirectional | Transfers commands, interrupt IDs, and condition codes. |
+| Interrupt Sources | Input | Receives eight independent interrupt requests. |
 
-### Processor-Controller Communication
+### 🤝 Processor-Controller Handshake
 
-The controller and processor use a handshake mechanism based on transitions on `intr_in`.
+The controller uses a transition-based handshake mechanism to coordinate communication with the processor.
 
-A High → Low → High transition represents an acknowledgement event.
+**Acknowledgement Sequence:**
 
-The shared data bus carries:
+`HIGH → LOW → HIGH`
+
+The shared data bus handles the following information:
 
 - Operating mode configuration.
 - Interrupt source identification.
@@ -107,13 +160,30 @@ The shared data bus carries:
 ## 📊 Condition Code Reference
 
 | Operating Mode | Controller → Processor | Processor → Controller |
-|---|---|---|
+|:---|:---:|:---:|
 | Polling | `01011` | `10100` |
 | Custom Priority | `10011` | `01100` |
 
 ---
 
-## 📁 Project Structure
+## 🛠️ Technology Stack
+
+<p>
+  <img src="https://img.shields.io/badge/Verilog-HDL-blue?style=flat-square" />
+  <img src="https://img.shields.io/badge/RTL-Digital%20Design-orange?style=flat-square" />
+  <img src="https://img.shields.io/badge/FSM-Control%20Logic-purple?style=flat-square" />
+  <img src="https://img.shields.io/badge/Verification-Testbench-green?style=flat-square" />
+</p>
+
+- **Hardware Description Language:** Verilog HDL
+- **Design Methodology:** Register Transfer Level (RTL)
+- **Control Architecture:** Finite State Machine (FSM)
+- **Digital Design Concepts:** Interrupt Arbitration, Priority Logic, Handshake Protocols
+- **Verification:** Verilog Testbenches
+
+---
+
+## 📁 Repository Structure
 
 ```text
 Interrupt-Controller/
@@ -132,24 +202,14 @@ Interrupt-Controller/
 
 ---
 
-## 🛠️ Technologies Used
-
-- **HDL:** Verilog
-- **Design Methodology:** RTL Design
-- **Control Logic:** Finite State Machines (FSM)
-- **Digital Design Concepts:** Interrupt Arbitration, Priority Logic, Handshake Protocols
-- **Verification:** Verilog Testbenches
-
----
-
 ## 🚀 Future Enhancements
 
-- Interrupt masking and individual interrupt enable/disable controls.
-- Handling simultaneous interrupt requests.
-- Nested interrupt support.
-- Enhanced priority arbitration mechanisms.
-- SystemVerilog-based verification and assertions.
-- FPGA synthesis and hardware implementation.
+- [ ] Interrupt masking and individual interrupt enable/disable controls.
+- [ ] Improved handling of simultaneous interrupt requests.
+- [ ] Nested interrupt support.
+- [ ] Advanced priority arbitration mechanisms.
+- [ ] SystemVerilog-based verification and assertions.
+- [ ] FPGA synthesis and hardware implementation.
 
 ---
 
@@ -160,12 +220,18 @@ Interrupt-Controller/
 B.Tech | Electronics and Instrumentation Engineering  
 National Institute of Technology, Rourkela
 
-- GitHub: [@Sachin87077](https://github.com/Sachin87077)
+[![GitHub](https://img.shields.io/badge/GitHub-Sachin87077-black?style=for-the-badge&logo=github)](https://github.com/Sachin87077)
 
 ---
 
 ## 📜 License
 
-This project is distributed under the **GNU General Public License v3.0 (GPL-3.0)**.
+This project is licensed under the **GNU General Public License v3.0 (GPL-3.0)**.
 
-See the [COPYING](COPYING) file for license details.
+Refer to the `COPYING` file for complete license details.
+
+---
+
+<p align="center">
+  <strong>⚡ Designed and Implemented using Verilog HDL</strong>
+</p>
