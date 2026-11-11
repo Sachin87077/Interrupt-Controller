@@ -1,29 +1,13 @@
-# Interrupt Controller
+# ⚡ 8-Input Interrupt Controller
 
-**8-Input Interrupt Controller | Verilog | Digital Logic Design**
+  <strong>A Verilog-Based Interrupt Controller with Polling and Custom Priority Arbitration</strong>
 
-**Author & Repository Maintainer:** Sachin Pal
-
-## Overview# ⚡ 8-Input Interrupt Controller
-
-<p align="center">
-  **A Verilog-Based Interrupt Controller with Polling and Custom Priority Arbitration**
-</p>
-
-<p align="center">
-  <img src="https://img.shields.io/badge/Language-Verilog-blue?style=for-the-badge&logo=verilog" />
-  <img src="https://img.shields.io/badge/Design-RTL-orange?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/Architecture-FSM-purple?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/License-GPL--3.0-green?style=for-the-badge" />
-</p>
-
----
 
 ## 📌 Overview
 
 The **Interrupt Controller** is an 8-channel hardware controller implemented in Verilog HDL, designed to manage interrupt requests from multiple peripheral devices and coordinate their servicing by a processor.
 
-It provides two operating modes: **Polling Mode** and **Custom Priority Mode**. While polling mode checks interrupt sources sequentially, custom priority mode allows the processor to configure the servicing order during initialization.
+It supports two operating modes: **Polling Mode** and **Custom Priority Mode**. While polling mode checks interrupt sources sequentially, custom priority mode allows the processor to configure the servicing order during initialization.
 
 The controller uses a shared data bus, interrupt request signals, and a handshake-based communication protocol to manage interrupt identification, acknowledgement, and servicing confirmation.
 
@@ -142,7 +126,7 @@ Interrupt-Controller/
 │
 ├── AUTHORS
 ├── COPYING
-├── README
+├── README.md
 └── TODO
 ```
 
@@ -185,74 +169,3 @@ National Institute of Technology, Rourkela
 This project is distributed under the **GNU General Public License v3.0 (GPL-3.0)**.
 
 See the [COPYING](COPYING) file for license details.
-
-An 8-input interrupt controller implemented in Verilog, designed to manage multiple interrupt sources and facilitate communication between a processor and peripheral devices.
-
-The controller supports two operating modes: Polling Mode and Custom Priority Mode, enabling both sequential and priority-based interrupt servicing.
-
-## Key Features
-
-- **8 Interrupt Sources:** Supports eight independent interrupt inputs.
-- **Polling Mode:** Sequentially monitors all interrupt sources and services active requests.
-- **Custom Priority Mode:** Supports processor-configured priority ordering for interrupt sources.
-- **Interrupt Arbitration:** Identifies and selects interrupt sources based on the configured servicing order.
-- **Processor Communication:** Implements a handshake-based communication protocol using interrupt request and acknowledgement signals.
-- **Condition Code Validation:** Validates interrupt acknowledgement and servicing confirmation.
-
-## Operating Modes
-
-### 1. Polling Mode
-
-- Continuously checks all eight interrupt sources in sequential order.
-- Asserts the interrupt output when an active request is detected.
-- Waits for processor acknowledgement.
-- Transmits the interrupt source ID using condition code `01011`.
-- Validates servicing confirmation using condition code `10100`.
-
-### 2. Custom Priority Mode
-
-- Configures priorities for all eight interrupt sources during initialization.
-- Accepts priority configuration through four processor communication cycles.
-- Checks interrupt sources from highest to lowest priority.
-- Uses condition code `10011` for controller communication and `01100` for processor acknowledgement.
-
-## Interface Signals
-
-| Signal | Description |
-|---|---|
-| `intr_out` | Interrupt request output |
-| `intr_in` | Processor acknowledgement input |
-| `data_bus` | Processor-controller communication bus |
-| `intrID` | Interrupt source identifier |
-
-## Repository Structure
-
-```text
-Interrupt-Controller/
-├── src/
-├── testbench/
-├── AUTHORS
-├── COPYING
-├── README
-└── TODO
-```
-
-## Future Enhancements
-
-- Interrupt masking and enable/disable functionality.
-- Support for simultaneous interrupt requests.
-- Nested interrupt handling.
-- Advanced priority arbitration.
-- FPGA synthesis and hardware validation.
-
-## Technologies
-
-- Verilog HDL
-- Digital Logic Design
-- Finite State Machines
-- RTL Design
-- Hardware Verification
-
-## License
-
-GNU General Public License v3.0 (GPL-3.0).
